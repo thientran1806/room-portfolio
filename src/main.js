@@ -21,12 +21,17 @@ dracoLoader.setDecoderPath('/draco/');
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
+const environmentMap = new THREE.CubeTextureLoader().setPath( 'textures/skybox/' );
+const cubeTexture = await environmentMap.loadAsync( [
+	'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png'
+] );
+
 const textureMap = {
   First: {
-    day:"/textures/First_Texture_Set.webp"
+    day:"/textures/SetOne.webp"
   },
   Second: {
-    day:"/textures/TextureSetTwo.webp"
+    day:"/textures/Second_Texture_Set.webp"
   },
   Third: {
     day:"/textures/Third_Texture_Set.webp"
@@ -35,6 +40,18 @@ const textureMap = {
     day:"/textures/TextureSetFour.webp"
   }
 }
+
+const videoElement = document.createElement("video");
+videoElement.src = "/textures/video/blue-wave.mp4";
+videoElement.loop = true;
+videoElement.muted = true;
+videoElement.playsInline = true;
+videoElement.autoplay = true;
+videoElement.play()
+
+const videoTexture = new THREE.VideoTexture(videoElement);
+videoTexture.colorSpace = THREE.SRGBColorSpace;
+videoTexture.flipY = false;
 
 const loadedTextures = {
   day: {}
@@ -47,26 +64,59 @@ Object.entries(textureMap).forEach(([key, paths])=>{
   loadedTextures.day[key] = dayTexture;
 })
 
-loader.load("/models/room-v3.glb", (glb)=>{
+loader.load("/models/room-v4.glb", (glb)=>{
   glb.scene.traverse(child=>{
     if(child.isMesh){
+      //use to check if the mesh is existed
       console.log(child.name);
       Object.keys(textureMap).forEach((key)=>{
         if(child.name.includes(key)){
           const material = new THREE.MeshBasicMaterial({
             map:loadedTextures.day[key],
           })
-
           child.material= material;
+
+          if(child.material.map){
+            child.material.map.minFilter = THREE.LinearFilter;
+          }
+        }
+        if(child.name.includes("Glass")){
+          child.material = new THREE.MeshPhysicalMaterial({
+            transmission: 1,
+            opacity: 1,
+            metalness: 0,
+            roughness: 0,
+            ior: 1.5,
+            thickness: 0.01,
+            specularIntensity: 1,
+            envMap: cubeTexture,
+            envMapIntensity: 1,
+          })
+        }
+        else if(child.name.includes("Screen")){
+          child.material = new THREE.MeshBasicMaterial({
+            map: videoTexture
+          })
+        }
+        else if(child.name.includes("Light")){
+          child.material = new THREE.MeshBasicMaterial({
+            color: 0xffffff
+          })
+        }
+        else if(child.name.includes("Pink_Light")){
+          child.material = new THREE.MeshBasicMaterial({
+            color: 0xff3399
+          })
         }
       })
     }
   })
+  scene.background = cubeTexture
   scene.add(glb.scene);
 })
 
-const camera = new THREE.PerspectiveCamera( 75, sizes.width / sizes.height, 0.1, 1000 );
-camera.position.z = 5;
+const camera = new THREE.PerspectiveCamera( 45, sizes.width / sizes.height, 0.1, 1000 );
+camera.position.set(16.338858629112558, 11.468893913732414, -20.808848254815302);
 
 const renderer = new THREE.WebGLRenderer({ canvas:canvas, antialias:true });
 renderer.setSize( sizes.width, sizes.height );
@@ -76,6 +126,7 @@ const controls = new OrbitControls( camera, renderer.domElement );
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.update();
+controls.target.set(1, 2.5, 0);
 
 //event listeners
 window.addEventListener("resize", () => {
@@ -93,6 +144,9 @@ window.addEventListener("resize", () => {
 
 const render = () => {
   controls.update();
+
+  // console.log(camera.position);
+  // console.log(controls.target);
 
   renderer.render(scene,camera );
   window.requestAnimationFrame(render);
