@@ -127,6 +127,13 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.update();
 controls.target.set(1, 2.5, 0);
+// Restrict horizontal rotation
+controls.minAzimuthAngle = Math.PI / 2;   
+controls.maxAzimuthAngle = -Math.PI ;  
+
+// Restrict vertical rotation 
+controls.minPolarAngle = Math.PI / 6;      // 30° from top
+controls.maxPolarAngle = Math.PI / 2.2;   // ~82° (just above horizon)
 
 //event listeners
 window.addEventListener("resize", () => {
