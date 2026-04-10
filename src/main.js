@@ -9,7 +9,9 @@ const scene = new THREE.Scene();
 const sizes = {
   height: window.innerHeight,
   width: window.innerWidth
-}
+};
+
+const yAxisFans = []
 
 //loaders
 const textureLoader = new THREE.TextureLoader();
@@ -22,13 +24,10 @@ const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
 const environmentMap = new THREE.CubeTextureLoader().setPath( 'textures/skybox/' );
-const cubeTexture = await environmentMap.loadAsync( [
-	'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png'
-] );
 
 const textureMap = {
   First: {
-    day:"/textures/SetOne.webp"
+    day:"/textures/Fiesr_Texture_Set.webp"
   },
   Second: {
     day:"/textures/Second_Texture_Set.webp"
@@ -37,7 +36,7 @@ const textureMap = {
     day:"/textures/Third_Texture_Set.webp"
   },
   Fourth: {
-    day:"/textures/TextureSetFour.webp"
+    day:"/textures/Fourth_Texture_Set.webp"
   }
 }
 
@@ -64,7 +63,7 @@ Object.entries(textureMap).forEach(([key, paths])=>{
   loadedTextures.day[key] = dayTexture;
 })
 
-loader.load("/models/room-v4.glb", (glb)=>{
+loader.load("/models/room-v5.glb", (glb)=>{
   glb.scene.traverse(child=>{
     if(child.isMesh){
       //use to check if the mesh is existed
@@ -75,6 +74,10 @@ loader.load("/models/room-v4.glb", (glb)=>{
             map:loadedTextures.day[key],
           })
           child.material= material;
+
+          if(child.name.includes("fans")){
+            yAxisFans.push(child);
+          }
 
           if(child.material.map){
             child.material.map.minFilter = THREE.LinearFilter;
@@ -89,7 +92,7 @@ loader.load("/models/room-v4.glb", (glb)=>{
             ior: 1.5,
             thickness: 0.01,
             specularIntensity: 1,
-            envMap: cubeTexture,
+            // envMap: cubeTexture,
             envMapIntensity: 1,
           })
         }
@@ -111,7 +114,7 @@ loader.load("/models/room-v4.glb", (glb)=>{
       })
     }
   })
-  scene.background = cubeTexture
+  // scene.background = cubeTexture
   scene.add(glb.scene);
 })
 
@@ -132,8 +135,8 @@ controls.minAzimuthAngle = Math.PI / 2;
 controls.maxAzimuthAngle = -Math.PI ;  
 
 // Restrict vertical rotation 
-controls.minPolarAngle = Math.PI / 6;      // 30° from top
-controls.maxPolarAngle = Math.PI / 2.2;   // ~82° (just above horizon)
+controls.minPolarAngle = Math.PI / 4;      // 30° from top
+controls.maxPolarAngle = Math.PI / 2;   // ~82° (just above horizon)
 
 //event listeners
 window.addEventListener("resize", () => {
@@ -154,6 +157,11 @@ const render = () => {
 
   // console.log(camera.position);
   // console.log(controls.target);
+
+  // Animate Fans
+  yAxisFans.forEach((fan) => {
+    fan.rotation.x += 0.1;
+  });
 
   renderer.render(scene,camera );
   window.requestAnimationFrame(render);
