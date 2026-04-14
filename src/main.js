@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { DRACOLoader } from 'three/examples/jsm/Addons.js';
 import { GLTFLoader } from 'three/examples/jsm/Addons.js';
+import gsap from 'gsap';
 
 const canvas = document.querySelector("#experience-canvas");
 const scene = new THREE.Scene();
@@ -11,7 +12,51 @@ const sizes = {
   width: window.innerWidth
 };
 
-const yAxisFans = []
+const modals = {
+  work: document.querySelector(".modal.work"),
+  about: document.querySelector(".modal.about"),
+  contact: document.querySelector(".modal.contact"),
+};
+
+document.querySelectorAll(".modal-exit-button").forEach(button=>{
+  button.addEventListener("click", (e)=>{
+    const modal = e.target.closest(".modal");
+    hideModal(modal);
+  })
+})
+
+const showModal = (modal) => {
+  modal.style.display = "block";
+
+  gsap.set(modal, {opacity: 0});
+
+  gsap.to(modal, {
+    opacity: 1,
+    duration: 0.5
+  })
+};
+const hideModal = (modal) => {
+  gsap.to(modal, {
+    opacity: 0,
+    duration: 0.5,
+    onComplete: () => {
+      modal.style.display = "none";
+    }
+  });
+};
+
+const xAxisFans = [];
+
+const raycasterObjects = [];
+let currentIntersects = [];
+
+const socialLinks = {
+  Github : "https://github.com",
+  Linkedln : "https://www.linkedin.com/in/trong-thien-tran-61931931b/",
+};
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
 
 //loaders
 const textureLoader = new THREE.TextureLoader();
@@ -52,6 +97,37 @@ const videoTexture = new THREE.VideoTexture(videoElement);
 videoTexture.colorSpace = THREE.SRGBColorSpace;
 videoTexture.flipY = false;
 
+window.addEventListener("mousemove", (e) =>{
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+})
+
+window.addEventListener("click", (e) =>{
+  if(currentIntersects.length > 0){
+    const object = currentIntersects[0].object;
+
+    Object.entries(socialLinks).forEach(([key, url]) => {
+      if(object.name.includes(key)){
+        const newWindow = window.open();
+        newWindow.opener = null;
+        newWindow.location = url;
+        newWindow.target = "_blank";
+        newWindow.rel = "noopener noreferrer";
+      }
+    });
+
+    if(object.name.includes("my_work")){
+      showModal(modals.work)
+    }
+    else if (object.name.includes("about_button")){
+      showModal(modals.about)
+    }
+    else if (object.name.includes("contact_button")){
+      showModal(modals.contact)
+    }
+  }
+})
+
 const loadedTextures = {
   day: {}
 }
@@ -76,12 +152,15 @@ loader.load("/models/room-v5.glb", (glb)=>{
           child.material= material;
 
           if(child.name.includes("fans")){
-            yAxisFans.push(child);
+            xAxisFans.push(child);
           }
 
           if(child.material.map){
             child.material.map.minFilter = THREE.LinearFilter;
           }
+        }
+        if(child.name.includes("Raycaster")){
+          raycasterObjects.push(child);
         }
         if(child.name.includes("Glass")){
           child.material = new THREE.MeshPhysicalMaterial({
@@ -159,11 +238,36 @@ const render = () => {
   // console.log(controls.target);
 
   // Animate Fans
-  yAxisFans.forEach((fan) => {
+  xAxisFans.forEach((fan) => {
     fan.rotation.x += 0.1;
   });
 
-  renderer.render(scene,camera );
+  // Raycaster
+  raycaster.setFromCamera(pointer, camera);
+
+  //calculate object intersecting the picking ray
+  currentIntersects = raycaster.intersectObjects(raycasterObjects);
+  
+  for(let i=0; i<currentIntersects.length; i++)
+  {
+    
+  }
+
+  if(currentIntersects.length>0)
+  {
+    const currentIntersectsObject = currentIntersects[0].object;
+
+    if(currentIntersectsObject.name.includes("Raycaster_Pointer")){
+      document.body.style.cursor = "pointer";
+    }else{
+      document.body.style.cursor = "default";
+    }
+  }
+  else{
+    document.body.style.cursor = "default";
+  }
+
+  renderer.render(scene, camera );
   window.requestAnimationFrame(render);
 }
 
