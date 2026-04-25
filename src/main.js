@@ -37,8 +37,12 @@ document.querySelectorAll(".modal-exit-button").forEach(button=>{
 );
 })
 
+let  isModalOpen = false;
+
 const showModal = (modal) => {
   modal.style.display = "block";
+  isModalOpen = true;
+  controls.enabled = false;
 
   gsap.set(modal, {opacity: 0});
 
@@ -48,6 +52,8 @@ const showModal = (modal) => {
   })
 };
 const hideModal = (modal) => {
+  isModalOpen = false;
+  controls.enabled = true;
   gsap.to(modal, {
     opacity: 0,
     duration: 0.5,
@@ -57,10 +63,12 @@ const hideModal = (modal) => {
   });
 };
 
+
 const xAxisFans = [];
 
 const raycasterObjects = [];
 let currentIntersects = [];
+let currentHoveredObject = null;
 
 const socialLinks = {
   Github : "https://github.com",
@@ -188,6 +196,11 @@ loader.load("/models/room-v5.glb", (glb)=>{
         if(child.name.includes("Raycaster")){
           raycasterObjects.push(child);
         }
+        if(child.name.includes("Hover")){
+          child.userData.initialScale = new THREE.Vector3().copy(child.scale);
+          child.userData.initialPosition = new THREE.Vector3().copy(child.position);
+          child.userData.initialRotation = new THREE.Euler().copy(child.rotation); 
+        }
         if(child.name.includes("Glass")){
           child.material = new THREE.MeshPhysicalMaterial({
             transmission: 1,
@@ -257,6 +270,53 @@ window.addEventListener("resize", () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 })
 
+const scaleFactor = 1.2;
+const scaleFactorEnabled = true;
+
+function playHoverAnimation (object, isHovering){
+  gsap.killTweensOf(object.scale);
+  gsap.killTweensOf(object.position);
+  gsap.killTweensOf(object.rotation);
+
+  const activeScale = (scaleFactorEnabled && !object.name.includes("Hover2")) ? scaleFactor: 0.8;
+
+  const isHover2 = object.name.includes("Hover2");
+  const isHover3 = object.name.includes("Hover3");
+
+  if(isHovering)
+  {
+    gsap.to(object.scale, {
+      x: object.userData.initialScale.x * (isHover2 ? 1.2 : isHover3 ? 1.0: activeScale ),
+      y: object.userData.initialScale.y * (isHover2 ? 1.0 : isHover3 ? 1.0: activeScale),
+      z: object.userData.initialScale.z * (isHover2 ? 1.0 : isHover3 ? 1.1: activeScale),
+      duration: 0.5,
+      ease: "bounce.out(1.8)"
+    })
+    if(!isHover2 && !isHover3){
+      gsap.to(object.rotation, {
+        x: object.userData.initialRotation.x + Math.PI / 8,
+        duration: 0.5,
+        ease: "bounce.out(1.8)",
+      })
+    }
+  }else{
+    gsap.to(object.scale, {
+      x: object.userData.initialScale.x,
+      y: object.userData.initialScale.y,
+      z: object.userData.initialScale.z,
+      duration: 0.3,
+      ease: "bounce.out(1.8)"
+    })
+    if(!isHover2 && !isHover3){
+      gsap.to(object.rotation, {
+        x: object.userData.initialRotation.x,
+        duration: 0.3,
+        ease: "bounce.out(1.8)",
+      })
+    }
+  }
+}
+
 const render = () => {
   controls.update();
 
@@ -269,7 +329,8 @@ const render = () => {
   });
 
   // Raycaster
-  raycaster.setFromCamera(pointer, camera);
+  if(!isModalOpen){
+    raycaster.setFromCamera(pointer, camera);
 
   //calculate object intersecting the picking ray
   currentIntersects = raycaster.intersectObjects(raycasterObjects);
@@ -283,6 +344,18 @@ const render = () => {
   {
     const currentIntersectsObject = currentIntersects[0].object;
 
+    if(currentIntersectsObject.name.includes("Hover")){
+      if(currentIntersectsObject !== currentHoveredObject){
+
+        if(currentHoveredObject){
+          playHoverAnimation(currentHoveredObject, false)
+        }
+
+        playHoverAnimation(currentIntersectsObject, true);
+        currentHoveredObject = currentIntersectsObject;
+      }
+    }
+
     if(currentIntersectsObject.name.includes("Raycaster_Pointer")){
       document.body.style.cursor = "pointer";
     }else{
@@ -290,9 +363,14 @@ const render = () => {
     }
   }
   else{
+    if(currentHoveredObject){
+      playHoverAnimation(currentHoveredObject,false);
+      currentHoveredObject = null;
+    }
     document.body.style.cursor = "default";
   }
-
+  }
+  
   renderer.render(scene, camera );
   window.requestAnimationFrame(render);
 }
