@@ -44,6 +44,13 @@ const showModal = (modal) => {
   isModalOpen = true;
   controls.enabled = false;
 
+  if(currentHoveredObject){
+    playHoverAnimation(currentHoveredObject, false)
+    currentHoveredObject = null
+  }
+  document.body.style.cursor = "default";
+  currentIntersects = [];
+
   gsap.set(modal, {opacity: 0});
 
   gsap.to(modal, {
@@ -124,12 +131,14 @@ window.addEventListener("mousemove", (e) =>{
 })
 
 window.addEventListener("touchstart", (e) =>{
+  if(isModalOpen) return;
   e.preventDefault()
   pointer.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
 }, {passive: false})
 
 window.addEventListener("touchend", (e) =>{
+  if(isModalOpen) return;
   e.preventDefault();
   handleRaycasterInteraction;
 }, {passive: false})
@@ -256,6 +265,10 @@ controls.maxAzimuthAngle = -Math.PI ;
 controls.minPolarAngle = Math.PI / 4;      // 30° from top
 controls.maxPolarAngle = Math.PI / 2;   // ~82° (just above horizon)
 
+// restrict distance
+controls.minDistance = 3;
+controls.maxDistance = 30;
+
 //event listeners
 window.addEventListener("resize", () => {
   sizes.width = window.innerWidth;
@@ -294,7 +307,7 @@ function playHoverAnimation (object, isHovering){
     })
     if(!isHover2 && !isHover3){
       gsap.to(object.rotation, {
-        x: object.userData.initialRotation.x + Math.PI / 8,
+        y: object.userData.initialRotation.y + Math.PI / 8,
         duration: 0.5,
         ease: "bounce.out(1.8)",
       })
@@ -309,7 +322,7 @@ function playHoverAnimation (object, isHovering){
     })
     if(!isHover2 && !isHover3){
       gsap.to(object.rotation, {
-        x: object.userData.initialRotation.x,
+        y: object.userData.initialRotation.y,
         duration: 0.3,
         ease: "bounce.out(1.8)",
       })
