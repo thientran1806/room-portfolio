@@ -5,26 +5,205 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>room-portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="app"></div>
 
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+      <div class="ls-win">
+        <div class="win-bar">
+          <div class="dot r modal-exit-button"></div>
+          <div class="dot a"></div>
+          <div class="dot g"></div>
+          <span class="win-title">portfolio.exe — boot sequence</span>
+        </div>
+        <div class="ls-body">
+          <div class="ls-cmd">
+            <span class="p">~</span> / portfolio $ <span class="p">init --env production</span>
+          </div>
+          <div class="ls-name">TRONG<br><em>THIEN</em></div>
+          <div class="ls-sub">// UI/UX Design &amp; 3d enthusiast</div>
+          <div class="ls-log" id="ls-log">
+            <span class="ok">></span> initializing scene<span class="cur"></span>
+          </div>
+          <div class="ls-track">
+            <div class="ls-fill" id="ls-fill"></div>
+          </div>
+          <div class="ls-pct-row"><span class="n" id="ls-pct">0</span>%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT MODAL -->
     <div class="about modal">
-      <h1 class="modal-title">aboutbdfdsfdbsmnfbdsn </h1>
-      <button class="modal-exit-button">EXIT MODALLLL</button>
-    </div>
-    <div class="contact modal">
-      <h1 class="modal-title">contacdsfhdfbsdfbjsf </h1>
-      <button class="modal-exit-button">EXIT MODALLLL</button>
-    </div>
-    <div class="work modal">
-      <h1 class="modal-title">worrkshdshvfcsvbcv </h1>
-      <button class="modal-exit-button">EXIT MODALLLL</button>
+      <div class="modal-card">
+        <div class="modal-bar">
+          <div class="dot r modal-exit-button"></div>
+          <div class="dot a"></div>
+          <div class="dot g"></div>
+          <span class="modal-bar-name">about_me.txt — read only</span>
+        </div>
+        <div class="modal-inner">
+          <div class="modal-cmd">
+            <span class="p">~</span> $ <span class="c">cat about_me.txt</span>
+          </div>
+          <h2 class="modal-heading">Who <em>I am</em></h2>
+          <div class="modal-hr"></div>
+          <p class="bio">
+            <span class="hi">Hey —</span> I'm <span class="nm">Trong Thien</span>, a UX designer obsessed with the intersection of 3D, motion, and interface design. I love building things that feel alive.
+          </p>
+          <div class="stack-label">// design_stack[]</div>
+          <div class="skill-grid">
+            <span class="skill-pill">three.js</span>
+            <span class="skill-pill">react</span>
+            <span class="skill-pill">gsap</span>
+            <span class="skill-pill">graphic</span>
+            <span class="skill-pill">scss</span>
+            <span class="skill-pill">webgl</span>
+            <span class="skill-pill">ux</span>
+            <span class="skill-pill">figma</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="experience">
-      <canvas id="experience-canvas" class="experience-canvas"></canvas>
+    <!-- CONTACT MODAL -->
+    <div class="contact modal">
+      <div class="modal-card">
+        <div class="modal-bar">
+          <div class="dot r modal-exit-button"></div>
+          <div class="dot a"></div>
+          <div class="dot g"></div>
+          <span class="modal-bar-name">contact.json — interactive</span>
+        </div>
+        <div class="modal-inner">
+          <div class="modal-cmd">
+            <span class="p">~</span> $ <span class="c">open contact.json</span>
+          </div>
+          <h2 class="modal-heading">Let's <em>talk</em></h2>
+          <div class="modal-hr"></div>
+          <div class="clinks">
+            <div class="crow">
+              <span class="ck">email</span>
+              <span class="cv">trongthien.tran01@lesley.edu</span>
+            </div>
+            <a class="crow" href="https://www.linkedin.com/in/trong-thien-tran-61931931b/" target="_blank" rel="noopener noreferrer">
+              <span class="ck">linkedin</span>
+              <span class="cv">trong-thien-tran</span>
+              <span class="ca">→</span>
+            </a>
+            <a class="crow" href="https://github.com/thientran1806" target="_blank" rel="noopener noreferrer">
+              <span class="ck">github</span>
+              <span class="cv">github.com/trongtran</span>
+              <span class="ca">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- WORK MODAL -->
+    <div class="work modal">
+      <div class="modal-card">
+        <div class="modal-bar">
+          <div class="dot r modal-exit-button"></div>
+          <div class="dot a"></div>
+          <div class="dot g"></div>
+          <span class="modal-bar-name">my_work/ — 4 projects</span>
+        </div>
+        <div class="modal-inner">
+          <div class="modal-cmd">
+            <span class="p">~</span> $ <span class="c">ls -la my_work/</span>
+          </div>
+          <h2 class="modal-heading">Selected <em>work</em></h2>
+          <div class="modal-hr"></div>
+          <div class="pgrid">
+            <div class="pc">
+              <div class="pn">// 001</div>
+              <div class="pt">Room Portfolio</div>
+              <div class="pd">Interactive 3D room in Three.js with GSAP and raycasting.</div>
+              <div class="ptags">
+                <span class="ptag">three.js</span>
+                <span class="ptag">gsap</span>
+                <span class="ptag">glsl</span>
+              </div>
+            </div>
+            <div class="pc">
+              <div class="pn">// 002</div>
+              <div class="pt">Project Two</div>
+              <div class="pd">Short description of this project and what makes it interesting.</div>
+              <div class="ptags">
+                <span class="ptag">react</span>
+                <span class="ptag">typescript</span>
+              </div>
+            </div>
+            <div class="pc">
+              <div class="pn">// 003</div>
+              <div class="pt">Project Three</div>
+              <div class="pd">Short description of this project and what makes it interesting.</div>
+              <div class="ptags">
+                <span class="ptag">webgl</span>
+                <span class="ptag">glsl</span>
+              </div>
+            </div>
+            <div class="pc">
+              <div class="pn">// 004</div>
+              <div class="pt">Project Four</div>
+              <div class="pd">Short description of this project and what makes it interesting.</div>
+              <div class="ptags">
+                <span class="ptag">scss</span>
+                <span class="ptag">vite</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="app"></div>
+    <div id="experience">
+      <canvas id="experience-canvas"></canvas>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
+    <script>
+      const fill   = document.getElementById('ls-fill');
+      const pct    = document.getElementById('ls-pct');
+      const log    = document.getElementById('ls-log');
+      const screen = document.getElementById('loading-screen');
+
+      const logs = [
+        'loading textures',
+        'parsing geometry',
+        'compiling shaders',
+        'placing lights',
+        'scene ready',
+      ];
+      let progress = 0, logIdx = 0;
+
+      const tick = setInterval(() => {
+        progress += Math.random() * 10 + 2;
+        if (progress >= 90) { progress = 90; clearInterval(tick); }
+        const p = Math.round(progress);
+        fill.style.width = p + '%';
+        pct.textContent  = p;
+        const ni = Math.min(Math.floor(progress / 20), logs.length - 1);
+        if (ni !== logIdx) {
+          logIdx = ni;
+          log.innerHTML = '<span class="ok">></span> ' + logs[logIdx] + '<span class="cur"></span>';
+        }
+      }, 220);
+
+      window.finishLoading = () => {
+        clearInterval(tick);
+        fill.style.width = '100%';
+        pct.textContent  = '100';
+        log.innerHTML = '<span class="ok">></span> <span class="ok">done. entering room...</span>';
+        setTimeout(() => screen.classList.add('hidden'), 700);
+      };
+
+      setTimeout(() => window.finishLoading?.(), 9000);
+    </script>
   </body>
 </html>

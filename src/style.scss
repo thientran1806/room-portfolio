@@ -2,51 +2,457 @@
 @use "./style/reset.scss";
 @use "./style/variables.scss" as vars;
 
-*{
+// ─── Google Font ───────────────────────────────────────────
+// Add this to your index.html <head>:
+// <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+
+// ─── Design Tokens ─────────────────────────────────────────
+:root {
+  --bg:          #191118;
+  --bg2:         #211920;
+  --bg3:         #2b2029;
+  --border:      #3d2e3a;
+  --pink:        #e060a0;
+  --pink-dim:    #7a3055;
+  --purple:      #b07de8;
+  --purple-dim:  #5a3a7a;
+  --amber:       #d49870;
+  --text:        #ecdae4;
+  --text-dim:    #8a7080;
+  --text-mute:   #5a4858;
+  --green:       #7ec8a0;
+}
+
+// ─── Base ───────────────────────────────────────────────────
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Frutiger";
 }
 
-:root {
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
 
-//experience
-
-#experience{
-  position: fixed;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  overflow: hidden;
-
-  #experience-canvas{
-    height: 100%;
-    width: 100%;
+  // CRT scanlines overlay
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.05) 2px,
+      rgba(0, 0, 0, 0.05) 4px
+    );
+    pointer-events: none;
+    z-index: 99998;
   }
 }
 
-// Modal
-.modal{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  max-width: 700px;
-  width: 100%;
-  transform: translate(-50%, -50%);
-  font-size: 32px;
-  z-index: 9999;
-  display: none;
-  background-color: vars.$base-white;
+// ─── Experience Canvas ──────────────────────────────────────
+#experience {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+
+  #experience-canvas {
+    width: 100%;
+    height: 100%;
+  }
 }
 
+// ─── Shared: Window Chrome ──────────────────────────────────
+.win-bar,
+.modal-bar {
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
 
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 
+  &.r { background: #c05050; }
+  &.a { background: #c09050; }
+  &.g { background: var(--green); }
+}
+
+// ─── Shared: Prompt line ────────────────────────────────────
+.ls-cmd,
+.modal-cmd {
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-bottom: 14px;
+  letter-spacing: 0.04em;
+
+  .p { color: var(--pink); }
+  .c { color: var(--purple); }
+}
+
+// ─── Shared: Modal heading ──────────────────────────────────
+.modal-heading {
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 18px;
+
+  em {
+    font-style: normal;
+    color: var(--pink);
+  }
+}
+
+.modal-hr {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 20px;
+}
+
+// ─── Blinking cursor ────────────────────────────────────────
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.cur {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  background: var(--pink);
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+// ════════════════════════════════════════════════════════════
+// LOADING SCREEN
+// ════════════════════════════════════════════════════════════
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.9s ease, visibility 0.9s ease;
+
+  &.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.ls-win {
+  width: min(520px, 90vw);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg2);
+}
+
+.win-title {
+  font-size: 11px;
+  color: var(--text-mute);
+  letter-spacing: 0.08em;
+  margin-left: 6px;
+}
+
+.ls-body {
+  padding: 28px 28px 24px;
+}
+
+.ls-name {
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 6px;
+
+  em {
+    font-style: normal;
+    color: var(--pink);
+  }
+}
+
+.ls-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  letter-spacing: 0.1em;
+}
+
+.ls-log {
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-bottom: 14px;
+  min-height: 16px;
+  letter-spacing: 0.04em;
+
+  .ok { color: var(--green); }
+}
+
+.ls-track {
+  height: 4px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ls-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--pink);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.ls-pct-row {
+  font-size: 11px;
+  color: var(--text-mute);
+  text-align: right;
+
+  .n { color: var(--pink); }
+}
+
+// ════════════════════════════════════════════════════════════
+// MODAL BASE
+// ════════════════════════════════════════════════════════════
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(14, 8, 12, 0.78);
+
+  // make sure showModal sets display: "flex" not "block"
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modal-bar-name {
+  font-size: 11px;
+  color: var(--text-mute);
+  letter-spacing: 0.08em;
+  margin-left: 6px;
+  flex: 1;
+}
+
+.modal-exit-button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #c05050;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.15s;
+  position: relative; // ← add this
+
+  // hidden by default, shows on hover
+  &::after {
+    content: '×';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover {
+    transform: scale(1.2);
+
+    &::after {
+      opacity: 1;
+    }
+  }
+}
+
+.modal-inner {
+  padding: 22px 24px 26px;
+}
+
+// ════════════════════════════════════════════════════════════
+// ABOUT MODAL
+// ════════════════════════════════════════════════════════════
+.modal.about {
+  .modal-card  { border-color: #4a3060; }
+
+  .modal-heading em { color: var(--purple); }
+
+  .modal-cmd .p { color: var(--purple); }
+}
+
+.bio {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.85;
+  margin-bottom: 20px;
+
+  .hi { color: var(--amber); }
+  .nm { color: var(--text); font-weight: 500; }
+}
+
+.stack-label {
+  font-size: 10px;
+  color: var(--text-mute);
+  letter-spacing: 0.15em;
+  margin-bottom: 10px;
+}
+
+.skill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.skill-pill {
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid var(--purple-dim);
+  border-radius: 3px;
+  color: var(--purple);
+  background: rgba(176, 125, 232, 0.07);
+  letter-spacing: 0.03em;
+}
+
+// ════════════════════════════════════════════════════════════
+// CONTACT MODAL
+// ════════════════════════════════════════════════════════════
+.clinks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.015);
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+  gap: 10px;
+
+  &:hover {
+    border-color: var(--pink-dim);
+    background: rgba(224, 96, 160, 0.06);
+  }
+}
+
+.ck {
+  font-size: 11px;
+  color: var(--text-mute);
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  min-width: 68px;
+}
+
+.cv {
+  font-size: 12px;
+  color: var(--pink);
+  word-break: break-all;
+  text-align: right;
+  flex: 1;
+}
+
+.ca {
+  font-size: 12px;
+  color: var(--text-mute);
+  flex-shrink: 0;
+}
+
+// ════════════════════════════════════════════════════════════
+// WORK MODAL
+// ════════════════════════════════════════════════════════════
+.pgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.pc {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.015);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: var(--pink-dim);
+    background: rgba(224, 96, 160, 0.05);
+  }
+}
+
+.pn {
+  font-size: 10px;
+  color: var(--text-mute);
+  letter-spacing: 0.1em;
+  margin-bottom: 7px;
+}
+
+.pt {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 5px;
+  letter-spacing: -0.01em;
+}
+
+.pd {
+  font-size: 11px;
+  color: var(--text-mute);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+
+.ptags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ptag {
+  font-size: 10px;
+  padding: 2px 7px;
+  border: 1px solid var(--pink-dim);
+  border-radius: 2px;
+  color: var(--pink);
+  letter-spacing: 0.04em;
+}

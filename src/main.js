@@ -40,7 +40,7 @@ document.querySelectorAll(".modal-exit-button").forEach(button=>{
 let  isModalOpen = false;
 
 const showModal = (modal) => {
-  modal.style.display = "block";
+  modal.style.display = "flex";
   isModalOpen = true;
   controls.enabled = false;
 
@@ -78,7 +78,7 @@ let currentIntersects = [];
 let currentHoveredObject = null;
 
 const socialLinks = {
-  Github : "https://github.com",
+  Github : "https://github.com/thientran1806",
   Linkedln : "https://www.linkedin.com/in/trong-thien-tran-61931931b/",
 };
 
@@ -182,6 +182,14 @@ Object.entries(textureMap).forEach(([key, paths])=>{
   loadedTextures.day[key] = dayTexture;
 })
 
+let hanging1;
+let hanging2;
+let contactbtn;
+let myworkbtn;
+let aboutbtn;
+let linkedlnbtn;
+let githubbtn;
+
 loader.load("/models/room-v5.glb", (glb)=>{
   glb.scene.traverse(child=>{
     if(child.isMesh){
@@ -209,6 +217,39 @@ loader.load("/models/room-v5.glb", (glb)=>{
           child.userData.initialScale = new THREE.Vector3().copy(child.scale);
           child.userData.initialPosition = new THREE.Vector3().copy(child.position);
           child.userData.initialRotation = new THREE.Euler().copy(child.rotation); 
+        }
+        if(child.name.includes("hanging_1")){
+          hanging1 = child;
+          child.scale.set(0, 0, 0);
+        }
+        else if(child.name.includes("hanging_2")){
+          hanging2 = child;
+          child.scale.set(0, 0, 0);
+        }
+        else if(child.name.includes("my_work")){
+          myworkbtn = child;
+          child.scale.set(0, 0, 0);
+          child.userData.initialScale = new THREE.Vector3(1, 2, 1);
+        }
+        else if(child.name.includes("contact")){
+          contactbtn = child;
+          child.scale.set(0, 0, 0);
+          child.userData.initialScale = new THREE.Vector3(1, 2, 1);
+        }
+        else if(child.name.includes("about")){
+          aboutbtn = child;
+          child.scale.set(0, 0, 0);
+          child.userData.initialScale = new THREE.Vector3(1, 2, 1);
+        }
+        else if(child.name.includes("Linkedln")){
+          linkedlnbtn = child;
+          child.scale.set(0, 0, 0);
+          child.userData.initialScale = new THREE.Vector3(1, 1, 1);
+        }
+        else if(child.name.includes("Github")){
+          githubbtn = child;
+          child.scale.set(0, 0, 0);
+          child.userData.initialScale = new THREE.Vector3(1, 2, 1);
         }
         if(child.name.includes("Glass")){
           child.material = new THREE.MeshPhysicalMaterial({
@@ -243,7 +284,59 @@ loader.load("/models/room-v5.glb", (glb)=>{
   })
   // scene.background = cubeTexture
   scene.add(glb.scene);
-})
+  playIntroAnimation();
+  window.finishLoading();
+});
+
+function playIntroAnimation() {
+  const t1 = gsap.timeline({
+    defaults:{
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    }
+  })
+
+  t1.to(hanging1.scale, {
+    z:1,
+    x:1,
+    y:1,
+  }, "-=0.5").to(hanging2.scale, {
+    z:1,
+    y:1,
+    x:1,
+  }, "-=0.5" ) 
+    .to(myworkbtn.scale, {
+    z:1,
+    y:2,
+    x:1,
+  }, "-=0.6") 
+    .to(contactbtn.scale, {
+    z:1,
+    y:2,
+    x:1,
+  }, "-=0.6") 
+    .to(aboutbtn.scale, {
+    z:1,
+    y:2,
+    x:1,
+  }, "-=0.6")
+  const t2 = gsap.timeline({
+    defaults:{
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    }
+  })
+
+  t1.to(linkedlnbtn.scale, {
+    z:1,
+    x:1,
+    y:1,
+  }).to(githubbtn.scale, {
+    z:1,
+    y:1,
+    x:1,
+  } ) 
+}
 
 const camera = new THREE.PerspectiveCamera( 45, sizes.width / sizes.height, 0.1, 1000 );
 camera.position.set(16.338858629112558, 11.468893913732414, -20.808848254815302);
@@ -295,6 +388,10 @@ function playHoverAnimation (object, isHovering){
 
   const isHover2 = object.name.includes("Hover2");
   const isHover3 = object.name.includes("Hover3");
+  const isMyWork = object.name.includes("my_work");
+  const isContact = object.name.includes("contact");
+  const isAbout = object.name.includes("about");
+  const isButton = isMyWork || isContact || isAbout;
 
   if(isHovering)
   {
@@ -307,7 +404,7 @@ function playHoverAnimation (object, isHovering){
     })
     if(!isHover2 && !isHover3){
       gsap.to(object.rotation, {
-        y: object.userData.initialRotation.y + Math.PI / 8,
+        z: object.userData.initialRotation.y + (isButton ? Math.PI / 12 : 0),
         duration: 0.5,
         ease: "bounce.out(1.8)",
       })
@@ -323,6 +420,8 @@ function playHoverAnimation (object, isHovering){
     if(!isHover2 && !isHover3){
       gsap.to(object.rotation, {
         y: object.userData.initialRotation.y,
+        x: object.userData.initialRotation.x,
+        z: object.userData.initialRotation.z,
         duration: 0.3,
         ease: "bounce.out(1.8)",
       })
@@ -350,7 +449,6 @@ const render = () => {
   
   for(let i=0; i<currentIntersects.length; i++)
   {
-    
   }
 
   if(currentIntersects.length>0)
