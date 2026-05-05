@@ -99,7 +99,7 @@ const environmentMap = new THREE.CubeTextureLoader().setPath( 'textures/skybox/'
 
 const textureMap = {
   First: {
-    day:"/textures/Fiesr_Texture_Set.webp"
+    day:"/textures/First_Texture_Set.webp"
   },
   Second: {
     day:"/textures/Second_Texture_Set.webp"
