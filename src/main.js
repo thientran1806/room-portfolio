@@ -112,6 +112,10 @@ const textureMap = {
   }
 }
 
+const vinylAudio = new Audio("/textures/sound/opalite.mp3");
+vinylAudio.loop = true;
+vinylAudio.volume = 0.7;
+
 const videoElement = document.createElement("video");
 videoElement.src = "/textures/video/blue-wave.mp4";
 videoElement.loop = true;
@@ -166,6 +170,9 @@ function handleRaycasterInteraction(){
     else if (object.name.includes("contact_button")){
       showModal(modals.contact)
     }
+    else if (object.name.includes("vinyl_disc")){
+      toggleVinylAnimation();
+    }
   }
 }
 
@@ -189,6 +196,10 @@ let myworkbtn;
 let aboutbtn;
 let linkedlnbtn;
 let githubbtn;
+let vinylDisc;
+let armVinyl;
+let isVinylPlaying = false;
+let vinylSpinTween = null;
 
 loader.load("/models/room-v5.glb", (glb)=>{
   glb.scene.traverse(child=>{
@@ -250,6 +261,15 @@ loader.load("/models/room-v5.glb", (glb)=>{
           githubbtn = child;
           child.scale.set(0, 0, 0);
           child.userData.initialScale = new THREE.Vector3(1, 2, 1);
+        }
+        else if(child.name.includes("vinyl_disc")){
+          vinylDisc = child;
+          child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
+          raycasterObjects.push(child); 
+        }        
+        else if(child.name.includes("arm_vinyl")){
+          armVinyl = child;
+          child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
         }
         if(child.name.includes("Glass")){
           child.material = new THREE.MeshPhysicalMaterial({
@@ -336,6 +356,62 @@ function playIntroAnimation() {
     y:1,
     x:1,
   } ) 
+}
+
+function toggleVinylAnimation() {
+  if (!vinylDisc || !armVinyl) return;
+ 
+  isVinylPlaying = !isVinylPlaying;
+ 
+  if (isVinylPlaying) {
+    // Move arm onto the disc (rotate +45 degrees on Y axis)
+    gsap.to(armVinyl.rotation, {
+      y: armVinyl.userData.initialRotation.y - Math.PI / 7,
+      duration: 0.8,
+      ease: "power2.inOut",
+    });
+ 
+    // Spin the disc continuously
+    vinylSpinTween = gsap.to(vinylDisc.rotation, {
+      y: vinylDisc.rotation.y + Math.PI * 2,
+      duration: 2,
+      ease: "none",
+      repeat: -1,
+    });
+    // play music
+    vinylAudio.play();
+  } else {
+    // Move arm back to resting position
+    gsap.to(armVinyl.rotation, {
+      y: armVinyl.userData.initialRotation.y,
+      duration: 0.8,
+      ease: "power2.inOut",
+    });
+ 
+    // Gradually slow down and stop the disc
+    if (vinylSpinTween) {
+      vinylSpinTween.kill();
+      vinylSpinTween = null;
+    }
+    gsap.to(vinylDisc.rotation, {
+      y: vinylDisc.userData.initialRotation
+        ? vinylDisc.userData.initialRotation.y
+        : 0,
+      duration: 1.2,
+      ease: "power2.out",
+    });
+    // Fade out and stop music
+    gsap.to(vinylAudio, {
+      volume: 0,
+      duration: 1.2,
+      ease: "power2.out",
+      onComplete: () => {
+        vinylAudio.pause();
+        vinylAudio.currentTime = 0;
+        vinylAudio.volume = 0.7;
+      }
+    });
+  }
 }
 
 const camera = new THREE.PerspectiveCamera( 45, sizes.width / sizes.height, 0.1, 1000 );
@@ -481,7 +557,6 @@ const render = () => {
     document.body.style.cursor = "default";
   }
   }
-  
   renderer.render(scene, camera );
   window.requestAnimationFrame(render);
 }
